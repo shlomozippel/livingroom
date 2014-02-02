@@ -1,0 +1,1 @@
+g++ main.cpp lpd8806led.c -lm -lwebsockets -pthread -g
