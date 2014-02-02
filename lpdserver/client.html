@@ -19,9 +19,9 @@ window.requestAnimFrame = (function(){
 })();
 
 /*
-// hack to lower framerate
+// hack to change framerate
 window.requestAnimFrame = function( callback ){
-            window.setTimeout(callback, 1000 / 10);
+            window.setTimeout(callback, 1000 / 80);
           }
 */
 
@@ -135,6 +135,11 @@ ws.onopen = function() {
     last_time = start_time;
 }
 
+window.onbeforeunload = function() {
+    ws.onclose = function () {}; // disable onclose handler first
+    ws.close()
+};
+
 var c1 = {
     r : 255,
     g : 0,
@@ -152,12 +157,12 @@ var step = 1.0 / (10.0 * 60.0); // 10 seconds
 
 function render(t, dt) {
     // hsv
-    var c = hsvToRgb(Math.fmod(getTimestamp() / 10000.0, 1.0), 1.0, 1.0);
+    //var c = hsvToRgb(Math.fmod(getTimestamp() / 5000.0, 1.0), 1.0, 1.0);
     //h += step;
 
 
     // rgb lerp
-    //var c = lerpColor(c1, c2, Math.fmod(getTimestamp()/20000.0, 1.0));
+    var c = lerpColor(c1, c2, Math.abs(Math.sin(getTimestamp()/500.0), 1.0));
     
     // solid color
     

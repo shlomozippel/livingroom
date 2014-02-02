@@ -43,7 +43,7 @@ int spi_init(int filedes) {
   int ret;
   const uint8_t mode = SPI_MODE_0;
   const uint8_t bits = 8;
-  const uint32_t speed = 250000;
+  const uint32_t speed = 5000000;
 
   ret = ioctl(filedes,SPI_IOC_WR_MODE, &mode);
   if(ret==-1) {
