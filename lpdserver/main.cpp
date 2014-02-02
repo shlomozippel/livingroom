@@ -24,6 +24,7 @@ CRGB leds[LED_COUNT] = {0};
 lpd8806_buffer leds_buffer = {0};
 
 void LED_show() {
+	memset(leds_buffer.pixels, 0, leds_buffer.leds * sizeof(lpd8806_color));
     for (int i=0; i < LED_COUNT; i++) {
         write_gamma_color(
             &leds_buffer.pixels[i],
@@ -80,6 +81,7 @@ int websockets_callback(struct libwebsocket_context *context,
         	break;
         case LWS_CALLBACK_RECEIVE:
             memcpy(leds, in, MIN(len, RX_BUFFER_SIZE));
+           	LED_show();
             break;
         default:
             break;
@@ -129,11 +131,12 @@ void setup() {
 	WS_setup();
 
 	LED_clear();
+	LED_show();
 }
 
 void loop() {
-	libwebsocket_service(websockets_context, 0);
-	LED_show();
+
+	libwebsocket_service(websockets_context, 50);
 }
 
 int main() {

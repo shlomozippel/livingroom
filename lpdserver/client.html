@@ -53,7 +53,7 @@ ws.binaryType = "arraybuffer";
 
 var led_count = 810;
 var byte_count = led_count * 3;
-var leds = new Uint8ClampedArray(byte_count);
+var leds = new Uint8Array(byte_count);
 
 /* accepts parameters
  * h  Object = {h:x, s:y, v:z}
@@ -89,7 +89,7 @@ function hsvToRgb(h, s, v) {
     case 5: r = v, g = p, b = q; break;
   }
  
-  return { r:r * 255, g:g * 255, b:b * 255 };
+  return { r:Math.floor(r * 255), g:Math.floor(g * 255), b:Math.floor(b * 255) };
 }
 
 function lerp(a,b,u) {
@@ -98,9 +98,9 @@ function lerp(a,b,u) {
 
 function lerpColor(c1, c2, u) {
     return {
-        r: lerp(c1.r, c2.r, u),
-        g: lerp(c1.g, c2.g, u),
-        b: lerp(c1.b, c2.b, u),
+        r: Math.floor(lerp(c1.r, c2.r, u)),
+        g: Math.floor(lerp(c1.g, c2.g, u)),
+        b: Math.floor(lerp(c1.b, c2.b, u)),
     }
 }
 
@@ -109,10 +109,10 @@ function setColor(r, g, b) {
         r = r.r, g = r.g, b = r.b;
     }
 
-    for (var i=0;i<this.byte_count;i+=3) {
-        this.leds[i] = r;
-        this.leds[i+1] = g;
-        this.leds[i+2] = b;
+    for (var i=0;i<byte_count;i+=3) {
+        leds[i] = r;
+        leds[i+1] = g;
+        leds[i+2] = b;
     }
 }
 
@@ -144,7 +144,7 @@ var c1 = {
 var c2 = {
     r : 0,
     g : 255,
-    b : 128
+    b : 0
 }
 
 var h = 0.0;
@@ -152,16 +152,30 @@ var step = 1.0 / (10.0 * 60.0); // 10 seconds
 
 function render(t, dt) {
     // hsv
-    var c = hsvToRgb(Math.fmod(h, 1.0), 1.0, 1.0);
-    h += step;
+    var c = hsvToRgb(Math.fmod(getTimestamp() / 10000.0, 1.0), 1.0, 1.0);
+    //h += step;
+
 
     // rgb lerp
     //var c = lerpColor(c1, c2, Math.fmod(getTimestamp()/20000.0, 1.0));
     
     // solid color
-    //var c = {r:255, g:0, b: 0};
     
+    //var c = {r:0, g:0, b: 0};
+    /*
+    if (Math.floor(getTimestamp() / 1000.0) % 2 == 1) {
+        c = {r:255, g:0, b: 155};
+    }
+    */
     setColor(c.r, c.g, c.b);
+/*
+    for (var i=0;i<byte_count;i+=3) {
+        var c = lerpColor(c1, c2, i / byte_count)
+        leds[i] = c.r;
+        leds[i+1] = c.g;
+        leds[i+2] = c.b;
+    }
+    */
 }
 
 (function animloop(){
