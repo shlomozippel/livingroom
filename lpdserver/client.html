@@ -104,7 +104,31 @@ function lerpColor(c1, c2, u) {
     }
 }
 
-function setColor(r, g, b) {
+function setBackColor(h, s, l) {
+    //$('body').css('background-color', 'hsl('+h+','+s+'%,'+l+'%)');
+
+    document.body.style.backgroundColor = 'hsl('+h+','+s+'%,'+l+'%)'
+
+    var bgcolor = document.body.style.backgroundColor;//$('body').css('background-color');
+
+    if (bgcolor.match(/^rgb/)) {
+      color = bgcolor.replace('rgb(', '').replace(')', '').split(', ');
+      hex = '#' + (color[0] > 16 ? '' : '0') + parseInt(color[0], 10).toString(16) + 
+                  (color[1] > 16 ? '' : '0') + parseInt(color[1], 10).toString(16) + 
+                  (color[2] > 16 ? '' : '0') + parseInt(color[2], 10).toString(16);
+    } else {
+      hex = bgcolor;
+      color = [parseInt(bgcolor.substr(1,2), 16), parseInt(bgcolor.substr(3,2), 16), parseInt(bgcolor.substr(5,2), 16)];
+    }
+
+    return {
+        r : color[0],
+        g : color[1],
+        b : color[2]
+    }
+  }
+
+function setLedsColor(r, g, b) {
     if (r && g === undefined && b === undefined) {
         r = r.r, g = r.g, b = r.b;
     }
@@ -114,6 +138,11 @@ function setColor(r, g, b) {
         leds[i+1] = g;
         leds[i+2] = b;
     }
+}
+
+function setColor(hh, ss, ll) {
+    var c = setBackColor(hh, ss, ll);
+    setLedsColor(c.r, c.g, c.b);
 }
 
 function clear() {
@@ -135,10 +164,22 @@ ws.onopen = function() {
     last_time = start_time;
 }
 
-window.onbeforeunload = function() {
-    ws.onclose = function () {}; // disable onclose handler first
-    ws.close()
-};
+var h=0, s=0, l=50;
+
+window.onmousemove = function(e) {
+      h = Math.min(360, parseInt((e.clientX / window.innerWidth) * 360, 10));
+      s = 100 - Math.min(100, parseInt((e.clientY / window.innerHeight) * 100, 10));
+      console.log({
+        h : h, s:s, l:l
+      })
+      setColor(h, s, l);
+}
+
+window.onmousewheel = function(e) {
+    e.preventDefault();
+      l = Math.max(0, Math.min(100, l + (e.wheelDelta / 120)));
+      setColor(h, s, l);
+}
 
 var c1 = {
     r : 255,
@@ -162,7 +203,7 @@ function render(t, dt) {
 
 
     // rgb lerp
-    var c = lerpColor(c1, c2, Math.abs(Math.sin(getTimestamp()/500.0), 1.0));
+    //var c = lerpColor(c1, c2, Math.abs(Math.sin(getTimestamp()/500.0), 1.0));
     
     // solid color
     
@@ -172,7 +213,7 @@ function render(t, dt) {
         c = {r:255, g:0, b: 155};
     }
     */
-    setColor(c.r, c.g, c.b);
+    //setColor(c.r, c.g, c.b);
 /*
     for (var i=0;i<byte_count;i+=3) {
         var c = lerpColor(c1, c2, i / byte_count)

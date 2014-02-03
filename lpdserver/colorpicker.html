@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body>
+
+<script type="text/javascript">
+
+//-----------------------------------------------------------------------------
+
+console.log("Connecting...")
+var ws = new WebSocket('ws://192.168.1.123:9000', 'leds');
+ws.binaryType = "arraybuffer";
+
+ws.onopen = function() {
+    console.log("Websocket connected");
+}
+
+ws.onclose = function() {
+    console.log("Websocket closed");
+}
+
+//-----------------------------------------------------------------------------
+
+var led_count = 810;
+var byte_count = led_count * 3;
+var leds = new Uint8Array(byte_count);
+
+function setBackColor(h, s, l) {
+    document.body.style.backgroundColor = 'hsl('+h+','+s+'%,'+l+'%)'
+    var bgcolor = document.body.style.backgroundColor;//$('body').css('background-color');
+
+    if (bgcolor.match(/^rgb/)) {
+      color = bgcolor.replace('rgb(', '').replace(')', '').split(', ');
+      hex = '#' + (color[0] > 16 ? '' : '0') + parseInt(color[0], 10).toString(16) + 
+                  (color[1] > 16 ? '' : '0') + parseInt(color[1], 10).toString(16) + 
+                  (color[2] > 16 ? '' : '0') + parseInt(color[2], 10).toString(16);
+    } else {
+      hex = bgcolor;
+      color = [parseInt(bgcolor.substr(1,2), 16), parseInt(bgcolor.substr(3,2), 16), parseInt(bgcolor.substr(5,2), 16)];
+    }
+
+    return {
+        r : color[0],
+        g : color[1],
+        b : color[2]
+    }
+  }
+
+function setLedsColor(r, g, b) {
+    if (r && g === undefined && b === undefined) {
+        r = r.r, g = r.g, b = r.b;
+    }
+
+    for (var i=0;i<byte_count;i+=3) {
+        leds[i] = r;
+        leds[i+1] = g;
+        leds[i+2] = b;
+    }
+
+    if (ws.readyState == WebSocket.OPEN) {
+      ws.send(leds);
+    }
+}
+
+function setColor(h, s, l) {
+    var c = setBackColor(h, s, l);
+    setLedsColor(c.r, c.g, c.b);
+}
+
+var h=0, s=0, l=50;
+
+window.onmousemove = function(e) {
+      h = Math.min(360, parseInt((e.clientX / window.innerWidth) * 360, 10));
+      s = 100 - Math.min(100, parseInt((e.clientY / window.innerHeight) * 100, 10));
+      console.log({
+        h : h, s:s, l:l
+      })
+      setColor(h, s, l);
+}
+
+window.onmousewheel = function(e) {
+    e.preventDefault();
+      l = Math.max(0, Math.min(100, l + (e.wheelDelta / 120)));
+      setColor(h, s, l);
+}
+
+        
+</script>
+</body>
+</html>

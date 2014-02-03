@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body>
+
+<script type="text/javascript">
+
+//-----------------------------------------------------------------------------
+// shims
+
+window.requestAnimFrame = (function(){
+  return  window.requestAnimationFrame       ||
+          window.webkitRequestAnimationFrame ||
+          window.mozRequestAnimationFrame    ||
+          function( callback ){
+            window.setTimeout(callback, 1000 / 60);
+          };
+})();
+
+window.WebSocket = window.WebSocket || window.MozWebSocket;
+
+if (window.performance.now) {
+    console.log("Using high performance timer");
+    getTimestamp = function() { return window.performance.now(); };
+} else {
+    if (window.performance.webkitNow) {
+        console.log("Using webkit high performance timer");
+        getTimestamp = function() { return window.performance.webkitNow(); };
+    } else {
+        console.log("Using low performance timer");
+        getTimestamp = function() { return new Date().getTime(); };
+    }
+}
+
+Math.fmod = function (a,b) { return Number((a - (Math.floor(a / b) * b)).toPrecision(8)); };
+
+//-----------------------------------------------------------------------------
+
+console.log("Connecting...")
+var ws = new WebSocket('ws://192.168.1.123:9000', 'leds');
+ws.binaryType = "arraybuffer";
+
+//-----------------------------------------------------------------------------
+// led stuff
+
+var led_count = 810;
+var byte_count = led_count * 3;
+var leds = new Uint8Array(byte_count);
+
+function hsvToRgb(h, s, v) {
+  var r, g, b;
+ 
+  var i = Math.floor(h * 6);
+  var f = h * 6 - i;
+  var p = v * (1 - s);
+  var q = v * (1 - f * s);
+  var t = v * (1 - (1 - f) * s);
+ 
+  switch (i % 6) {
+    case 0: r = v, g = t, b = p; break;
+    case 1: r = q, g = v, b = p; break;
+    case 2: r = p, g = v, b = t; break;
+    case 3: r = p, g = q, b = v; break;
+    case 4: r = t, g = p, b = v; break;
+    case 5: r = v, g = p, b = q; break;
+  }
+ 
+  return { r:Math.floor(r * 255), g:Math.floor(g * 255), b:Math.floor(b * 255) };
+}
+
+function setColor(r, g, b) {
+    if (r && g === undefined && b === undefined) {
+        r = r.r, g = r.g, b = r.b;
+    }
+
+    for (var i=0;i<byte_count;i+=3) {
+        leds[i] = r;
+        leds[i+1] = g;
+        leds[i+2] = b;
+    }
+}
+
+function clear() {
+    setColor(0, 0, 0);
+}
+
+
+var hsv_seconds = 10;
+
+//-----------------------------------------------------------------------------
+// render loop
+
+var start_time = 0;
+var last_time = 0;
+
+var frames = 0;
+
+ws.onopen = function() {
+    console.log("Websocket connected")
+    start_time = getTimestamp();
+    last_time = start_time;
+}
+
+function render(t, dt) {
+    // hsv
+    var c = hsvToRgb(Math.fmod(getTimestamp() / (hsv_seconds * 1000.0), 1.0), 1.0, 1.0);
+    setColor(c.r, c.g, c.b);
+}
+
+(function animloop(){
+    if (ws.readyState == WebSocket.OPEN) {
+        var curr_time = getTimestamp();
+        render(curr_time - start_time, curr_time - last_time);
+        last_time = curr_time;
+        ws.send(leds);
+        frames++;
+    }
+    requestAnimFrame(animloop);
+})();
+        
+</script>
+</body>
+
+<form>
+<input type="text" name="hsvseconds" value="10"><input type="button" onclick="hsv_seconds=parseInt(this.form.hsvseconds.value, 10)" value="Set">
+  </form>
+</html>
