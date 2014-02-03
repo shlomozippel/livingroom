@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body>
+
+<script type="text/javascript">
+
+//-----------------------------------------------------------------------------
+
+console.log("Connecting...")
+var ws = new WebSocket('ws://192.168.1.123:9000', 'leds');
+ws.binaryType = "arraybuffer";
+
+
+ws.onclose = function() {
+    console.log("Websocket closed");
+}
+
+//-----------------------------------------------------------------------------
+
+var led_count = 810;
+var byte_count = led_count * 3;
+var leds = new Uint8Array(byte_count);
+
+
+function setLedsColor(r, g, b) {
+    if (r && g === undefined && b === undefined) {
+        r = r.r, g = r.g, b = r.b;
+    }
+
+    for (var i=0;i<byte_count;i+=3) {
+        leds[i] = r;
+        leds[i+1] = g;
+        leds[i+2] = b;
+    }
+
+    if (ws.readyState == WebSocket.OPEN) {
+      ws.send(leds);
+    }
+}
+
+ws.onopen = function() {
+    console.log("Websocket connected");
+
+    setLedsColor(0,0,0)
+}
+        
+</script>
+</body>
+</html>
