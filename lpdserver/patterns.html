@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body>
+
+<script type="text/javascript">
+
+//-----------------------------------------------------------------------------
+
+window.WebSocket = window.WebSocket || window.MozWebSocket;
+
+if (window.performance.now) {
+    console.log("Using high performance timer");
+    getTimestamp = function() { return window.performance.now(); };
+} else {
+    if (window.performance.webkitNow) {
+        console.log("Using webkit high performance timer");
+        getTimestamp = function() { return window.performance.webkitNow(); };
+    } else {
+        console.log("Using low performance timer");
+        getTimestamp = function() { return new Date().getTime(); };
+    }
+}
+
+Math.fmod = function (a,b) { return Number((a - (Math.floor(a / b) * b)).toPrecision(8)); };
+
+//-----------------------------------------------------------------------------
+
+console.log("Connecting...")
+var ws = new WebSocket('ws://192.168.1.123:9000', 'leds');
+ws.binaryType = "arraybuffer";
+
+//-----------------------------------------------------------------------------
+// led stuff
+
+var led_count = 810;
+var byte_count = led_count * 3;
+var leds = new Uint8Array(byte_count);
+
+function hsvToRgb(h, s, v) {
+  var r, g, b;
+ 
+  var i = Math.floor(h * 6);
+  var f = h * 6 - i;
+  var p = v * (1 - s);
+  var q = v * (1 - f * s);
+  var t = v * (1 - (1 - f) * s);
+ 
+  switch (i % 6) {
+    case 0: r = v, g = t, b = p; break;
+    case 1: r = q, g = v, b = p; break;
+    case 2: r = p, g = v, b = t; break;
+    case 3: r = p, g = q, b = v; break;
+    case 4: r = t, g = p, b = v; break;
+    case 5: r = v, g = p, b = q; break;
+  }
+ 
+  return { r:Math.floor(r * 255), g:Math.floor(g * 255), b:Math.floor(b * 255) };
+}
+
+function setColor(r, g, b) {
+    if (r && g === undefined && b === undefined) {
+        r = r.r, g = r.g, b = r.b;
+    }
+
+    for (var i=0;i<byte_count;i+=3) {
+        leds[i] = r;
+        leds[i+1] = g;
+        leds[i+2] = b;
+    }
+}
+
+function setPixel(n, r, g, b) {
+   var i = n * 3;
+   leds[i] = r;
+   leds[i+1] = g;
+   leds[i+2] = b;
+}
+
+//-----------------------------------------------------------------------------
+// patterns
+
+function clear() {
+    setColor(0, 0, 0);
+}
+
+function hsv(t, seconds) {
+  seconds = seconds || 5;
+  var c = hsvToRgb(Math.fmod(t / (seconds * 1000.0), 1.0), 1.0, 1.0);
+  setColor(c.r, c.g, c.b);
+}
+
+function compcolors(t) {
+  var offset_speed = -80.0; // leds / second
+  var color_speed = 30; // seconds
+  var size = 50; // leds
+
+  var offset = parseInt((t / 1000.0) * offset_speed);
+  if (offset < 0) offset += (810 * (Math.floor(Math.abs(offset) / 810) + 1));
+  
+  var h = Math.fmod(t / (color_speed * 1000.0), 1.0);
+  var comp_h = h + 0.5; if (comp_h > 1.0) comp_h -= 1.0;
+  
+  var half_size = parseInt(size / 2);
+
+  var c;
+  
+  for (var i=0; i<810; i++) {
+    if (Math.fmod(i, size) < half_size) {
+      c = hsvToRgb(h, 1.0, 1.0);
+    } else {
+      c = hsvToRgb(comp_h, 1.0, 1.0);
+    }
+    setPixel((i + offset) % 810, c.r, c.g, c.b);
+  }
+}
+
+//-----------------------------------------------------------------------------
+// render loop
+
+var start_time = 0;
+var last_time = 0;
+
+var frames = 0;
+
+ws.onopen = function() {
+    console.log("Websocket connected")
+    start_time = getTimestamp();
+    last_time = start_time;
+}
+
+function render(t, dt) {
+  //hsv(t, 30);
+  compcolors(t);
+}
+
+(function animloop(){
+    var curr_time = getTimestamp();
+    if (ws.readyState == WebSocket.OPEN) {
+        render(curr_time - start_time, curr_time - last_time);
+        last_time = curr_time;
+        ws.send(leds);
+        frames++;
+    }
+    var delay = 1000 / 60 - (getTimestamp() - curr_time);
+    if (delay < 0) delay = 0;
+    window.setTimeout(animloop, delay);
+})();
+        
+</script>
+</body>
+</html>
