@@ -3,10 +3,11 @@ var app = express();
 var port = 3700;
 
  
-app.get("/", function(req, res){
+app.get("test/", function(req, res){
     res.send("It works!");
-  console.log("Request omercy " + req);
 });
+
+app.use(express.static(__dirname + '/static'));
  
 app.listen(port);
 console.log("Listening on port " + port);
@@ -17,9 +18,10 @@ var leds = new Leds(100);
 
 
 function render () {
-  var c = hsvToRgb(0.4, 1.0, 1.0);
-  //setColor(c.r, c.g, c.b);
-  setColor(hsvToRgb(0.8, 1.0, 1.0));
+	var c = hsvToRgb(0.4, 1.0, 1.0);
+	//setColor(c.r, c.g, c.b);
+  setColor(255, 255, 255);
+	//setColor(hsvToRgb(0.8, 1.0, 1.0));
 }
 
 /*
