@@ -92,9 +92,9 @@ function hsv(t, seconds) {
 }
 
 function compcolors(t) {
-  var offset_speed = 30.0; // leds / second
-  var color_speed = 60; // seconds
-  var size = 12; // leds
+  var offset_speed = 80.0; // leds / second
+  var color_speed = 10; // seconds
+  var size = 30; // leds
 
   var offset = Math.fmod(parseInt((t / 1000.0) * offset_speed), 810);
   

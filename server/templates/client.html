@@ -93,7 +93,7 @@ body {
   <% _.each(patterns, function(pattern, patternid) { if ('name' in pattern) { %>
     
     <div class="col-lg-3 col-sm-4 col-xs-6">
-        <a href="#" class="thumbnail">
+        <a href="#" class="thumbnail" data-pattern="<%= patternid %>">
              <img src="http://placehold.it/300x300" class="img-responsive">
              <%= pattern.name %>
         </a>
@@ -108,7 +108,7 @@ body {
 
 <div id="footer">
   <div class="container">
-    <p class="text-muted credit">Shlomo Zippel</p>
+    <p class="text-muted credit">Shlomo Zippel. Thanks to Eran Rundstein, Shimon Lazarov</p>
   </div>
 </div>
 
@@ -142,7 +142,12 @@ $(function() {
     $("#offbutton").click(function() {
       $.ajax({url:'/pattern/off', type:'POST'});
     });
-})
+
+    $('a.thumbnail').click(function(e) {
+      var patternid = $(e.delegateTarget).attr('data-pattern');
+      $.ajax({url:'/pattern/' + patternid, type:'POST'});
+    });
+});
 
 </script>
   
