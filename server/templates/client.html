@@ -128,6 +128,13 @@ $("#colorpicker").spectrum({
         clearInterval(spectrum_timer);
     }
 });
+
+$(function() {
+    $("#offbutton").click(function() {
+      $.ajax({url:'/pattern/off', type:'POST'});
+    });
+})
+
 </script>
   
 </body>
