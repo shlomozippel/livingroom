@@ -21,6 +21,13 @@ Leds.prototype = {
         }
     },
 
+    parseRgb : function(color) {
+        var result = [parseInt(color.substr(1,2), 16), parseInt(color.substr(3,2), 16), parseInt(color.substr(5,2), 16)];
+        return {
+            r : result[0], g : result[1], b : result[2]
+        }
+    },
+
     setPixelRgb : function(n, r, g, b) {
         if (r && g === undefined && b === undefined) {
             g = r.g, b = r.b, r = r.r;
