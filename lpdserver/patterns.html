@@ -92,9 +92,9 @@ function hsv(t, seconds) {
 }
 
 function compcolors(t) {
-  var offset_speed = 80.0; // leds / second
+  var offset_speed = 50.0; // leds / second
   var color_speed = 10; // seconds
-  var size = 30; // leds
+  var size = 202; // leds
 
   var offset = Math.fmod(parseInt((t / 1000.0) * offset_speed), 810);
   
@@ -107,7 +107,7 @@ function compcolors(t) {
   
   for (var i=0; i<810; i++) {
     if (Math.fmod(i, size) < half_size) {
-      c = hsvToRgb(h, 1.0, 1.0);
+      c = hsvToRgb(h, 1.0, 0.3);
     } else {
       c = hsvToRgb(comp_h, 1.0, 1.0);
     }
@@ -142,7 +142,7 @@ function render(t, dt) {
         ws.send(leds);
         frames++;
     }
-    var delay = 1000 / 60 - (getTimestamp() - curr_time);
+    var delay = 1000 / 40 - (getTimestamp() - curr_time);
     if (delay < 0) delay = 0;
     window.setTimeout(animloop, delay);
 })();

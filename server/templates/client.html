@@ -114,6 +114,7 @@ body {
 
 <script>
 var spectrum_shown = false;
+var last_color = '';
 $("#colorpicker").spectrum({
     color: "#f00",
     show: function() {
@@ -122,14 +123,19 @@ $("#colorpicker").spectrum({
         (function send() {
             if (!spectrum_shown) return;
 
-            var color = $('#colorpicker').spectrum('get');
-            $.ajax({
-                url: '/pattern/rgb',
-                type:'POST',
-                data: {'color' : color.toHexString()},
-                success: function() { send(); },
-                error: function() { send(); },
-            });
+            var color = $('#colorpicker').spectrum('get').toHexString();
+            if (color != last_color) {
+              $.ajax({
+                  url: '/pattern/rgb',
+                  type:'POST',
+                  data: {'color' : color},
+                  success: function() { send(); },
+                  error: function() { send(); },
+              });
+              last_color = color;
+            } else {
+              setTimeout(send, 1000/60);
+            }
         })();
         
     },
