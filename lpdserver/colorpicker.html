@@ -73,9 +73,6 @@ var h=0, s=0, l=50;
 window.onmousemove = function(e) {
       h = Math.min(360, parseInt((e.clientX / window.innerWidth) * 360, 10));
       s = 100 - Math.min(100, parseInt((e.clientY / window.innerHeight) * 100, 10));
-      console.log({
-        h : h, s:s, l:l
-      })
       setColor(h, s, l);
 }
 

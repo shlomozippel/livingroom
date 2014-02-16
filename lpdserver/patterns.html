@@ -61,7 +61,7 @@ function hsvToRgb(h, s, v) {
 
 function setColor(r, g, b) {
     if (r && g === undefined && b === undefined) {
-        r = r.r, g = r.g, b = r.b;
+        g = r.g, b = r.b, r = r.r;
     }
 
     for (var i=0;i<byte_count;i+=3) {
@@ -92,12 +92,11 @@ function hsv(t, seconds) {
 }
 
 function compcolors(t) {
-  var offset_speed = -80.0; // leds / second
-  var color_speed = 30; // seconds
-  var size = 50; // leds
+  var offset_speed = 30.0; // leds / second
+  var color_speed = 60; // seconds
+  var size = 12; // leds
 
-  var offset = parseInt((t / 1000.0) * offset_speed);
-  if (offset < 0) offset += (810 * (Math.floor(Math.abs(offset) / 810) + 1));
+  var offset = Math.fmod(parseInt((t / 1000.0) * offset_speed), 810);
   
   var h = Math.fmod(t / (color_speed * 1000.0), 1.0);
   var comp_h = h + 0.5; if (comp_h > 1.0) comp_h -= 1.0;
