@@ -113,19 +113,28 @@ body {
 </div>
 
 <script>
-var spectrum_timer;
+var spectrum_shown = false;
 $("#colorpicker").spectrum({
     color: "#f00",
-    /*move: function(color) {
-    },*/
     show: function() {
-        spectrum_timer = setInterval(function() {
+        spectrum_shown = true;
+
+        (function send() {
+            if (!spectrum_shown) return;
+
             var color = $('#colorpicker').spectrum('get');
-            $.ajax({url:'/pattern/rgb', type:'POST', data:{'color' : color.toHexString()}});
-        }, (1000.0 / 10.0));
+            $.ajax({
+                url: '/pattern/rgb',
+                type:'POST',
+                data: {'color' : color.toHexString()},
+                success: function() { send(); },
+                error: function() { send(); },
+            });
+        })();
+        
     },
     hide: function() {
-        clearInterval(spectrum_timer);
+        spectrum_shown = false;
     }
 });
 </script>
