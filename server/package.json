@@ -1,0 +1,24 @@
+{
+  "name": "server",
+  "version": "0.0.0",
+  "description": "ERROR: No README.md file found!",
+  "main": "app.js",
+  "dependencies": {
+    "colorspaces": "~0.1.3",
+    "consolidate": "~0.10.0",
+    "express": "~3.4.8",
+    "readable-stream": "~1.1.10",
+    "socket.io": "~0.9.16",
+    "stream-counter": "~0.2.0",
+    "underscore": "~1.6.0",
+    "websocket": "~1.0.8",
+    "websocket-client": "~1.0.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": "",
+  "author": "",
+  "license": "BSD"
+}
