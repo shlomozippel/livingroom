@@ -137,6 +137,13 @@ $("#colorpicker").spectrum({
         spectrum_shown = false;
     }
 });
+
+$(function() {
+    $("#offbutton").click(function() {
+      $.ajax({url:'/pattern/off', type:'POST'});
+    });
+})
+
 </script>
   
 </body>
